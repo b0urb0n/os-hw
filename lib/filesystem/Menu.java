@@ -16,7 +16,8 @@ public class Menu {
                                    + "Select action: ";
   
   private Scanner input = new Scanner(System.in);
-  
+  private File cwd;
+
   public void display() {
     System.out.println(HEADER);
     System.out.print(MENU);
@@ -79,13 +80,20 @@ public class Menu {
     
   }
 
-  private void listDirectory(boolean b) {
-    // TODO Auto-generated method stub
-    
+  private void listDirectory(boolean recurse) {
+    for (String child : cwd.list()) {
+      File f = new File(child);
+      System.out.println();
+    }
   }
 
   private void selectDirectory() {
-    // TODO Auto-generated method stub
-    
+    System.out.print(SELECT_DIR);
+    File d = new File(input.nextLine());
+    if (d.isDirectory()) {
+      this.cwd = d;
+    } else {
+      // TODO error that d isn't a dir
+    }
   }
 }
