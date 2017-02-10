@@ -1,4 +1,4 @@
-package lib.thread;
+package miller.thread;
 
 import java.util.concurrent.Semaphore;
 
@@ -14,7 +14,6 @@ class CustomThread implements Runnable {
     this.id = id;
   }
 
-  @Override
   public void run() {
     while (iteration <= ThreadSync.MAX_ITERATION) {
       if (semaphore.availablePermits() == id) {

@@ -1,4 +1,4 @@
-package lib.filesystem;
+package miller.filesystem;
 
 public class FileSystemExplorer {
   public static void main(String[] args) {

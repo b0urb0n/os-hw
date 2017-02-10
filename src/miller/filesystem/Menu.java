@@ -1,4 +1,4 @@
-package lib.filesystem;
+package miller.filesystem;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,38 +9,48 @@ import java.util.Scanner;
 import java.util.stream.Stream;
 
 public class Menu {
+  private static final int BYTE_COLS = 16;
   private static final String FILE_INFO = "%s - %s";
   private static final String INPUT_DIR = "\nInput directory: ";
   private static final String INPUT_FILE = "\nInput file: ";
   private static final String INPUT_PASSWORD = "\nInput password: ";
+  private static final String ERROR_NO_CWD = "\nError: you must select a directory before continuing";
+  private static final String ERROR_CANT_OPEN = "\nError: cannot open %s for reading";
   private static final String ERROR_NOT_FOUND = "\nError: %s not found.";
   private static final String ERROR_COMMAND = "\nInvalid selection...";
   private static final String ERROR_INFO = "\nError: %s";
   private static final String HEADER = "\n-- Filesystem Menu --";
-  private static final String MENU = "0 – Exit\n"
-                                   + "1 – Select directory\n"
-                                   + "2 – List directory content (first level)\n"
-                                   + "3 – List directory content (all levels)\n"
-                                   + "4 – Delete file\n"
-                                   + "5 – Display file (hexadecimal view)\n"
-                                   + "6 – Encrypt file (XOR with password)\n"
-                                   + "7 – Decrypt file (XOR with password)\n"
+  private static final String MENU = "0 - Exit\n"
+                                   + "1 - Select directory\n"
+                                   + "2 - List directory content (first level)\n"
+                                   + "3 - List directory content (all levels)\n"
+                                   + "4 - Delete file\n"
+                                   + "5 - Display file (hexadecimal view)\n"
+                                   + "6 - Encrypt file (XOR with password)\n"
+                                   + "7 - Decrypt file (XOR with password)\n"
                                    + "Select action: ";
   
   private Scanner input = new Scanner(System.in);
-  private Path cwd;
+  private Path cwd = null;
 
   public void display() {
     System.out.println(HEADER);
     System.out.print(MENU);
-    
-    int cmd = input.nextInt();
-    input.nextLine();
-    
-    parse(cmd);
+
+    try{
+      int cmd = Integer.parseInt(input.nextLine());
+      parse(cmd);
+    } catch (NumberFormatException e) {
+      System.out.println(ERROR_COMMAND);
+      return;
+    } 
   }
   
   private void parse(int command) {
+    if (cwd == null && command != 1 && command != 0) {
+      System.out.println(ERROR_NO_CWD);
+      return;
+    }
     switch(command){
     case 0:
       System.exit(0);
@@ -73,35 +83,68 @@ public class Menu {
   }
   
   private Path getPathFromInput() {
-    System.out.print(INPUT_FILE);
-    Path p = Paths.get(input.nextLine());
-    
-    while (! Files.isDirectory(p, LinkOption.NOFOLLOW_LINKS)){
-      System.out.println(String.format(ERROR_NOT_FOUND, p));
-      p = Paths.get(input.nextLine());
+    Path p = null;
+    String in;
+        
+    while (true){
+      System.out.print(INPUT_FILE);
+      in = input.nextLine();
+      if (in.startsWith("/")) {
+        p = Paths.get(in);
+      } else {
+        p = Paths.get(cwd.toString(), in);
+      }
+      
+      if (Files.isRegularFile(p)) {
+        return p;
+      }
+      
+      System.out.println(String.format(ERROR_NOT_FOUND, p.toString()));
     }
-    
-    return p;
   }
   
   private String getPasswordFromInput() {
     System.out.print(INPUT_PASSWORD);
-    return new String();
+    return input.nextLine();
   }
 
   private void decryptFile() {
     Path f = getPathFromInput();
     String password = getPasswordFromInput();
+    
+    //TODO xor file with password
   }
 
   private void encryptFile() {
     Path f = getPathFromInput();
     String password = getPasswordFromInput();
+    
+    //TODO xor file with password
   }
 
   private void displayFile() {
+    int count = 0;
+    StringBuilder sb = new StringBuilder();
     Path f = getPathFromInput();
     
+    try {
+      byte[] bytes = Files.readAllBytes(f);
+      for (byte b : bytes){
+        sb.append(String.format("%02X", b));
+        count++;
+        
+        if (count >= BYTE_COLS) {
+          count = 0;
+          sb.append("\n");
+        } else {
+          sb.append(" ");
+        }
+      }
+    } catch (IOException e) {
+      System.out.println(String.format(ERROR_CANT_OPEN, f.toString()));
+    } finally {
+      System.out.println(sb.toString());
+    }
   }
 
   private void deleteFile() {
@@ -115,19 +158,23 @@ public class Menu {
   }
 
   private void listDirectory(Path path, boolean recurse) {
-    Stream<Path> children;
+    Stream<Path> children = null;
     try {
-      children = Files.list(path);
-      children.forEach(this::printFileInfo);
+      if (recurse) {
+        children = Files.walk(path);
+      } else {
+        children = Files.walk(path, 1);
+      }
     } catch (IOException e) {
-      // TODO Auto-generated catch block
+      System.out.println(String.format(ERROR_INFO, e.toString()));
+    } finally {
+      children.forEach(this::printFileInfo);
     }
-    // TODO fix this function
   }
   
   private void printFileInfo(Path path) {
     String type = "?";
-    String info = path.toString();
+    String info = cwd.relativize(path).toString();
     
     if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)) {
       type = "D";
@@ -142,7 +189,8 @@ public class Menu {
       }
     }
     
-    System.out.println(String.format(FILE_INFO, type, info));
+    if (info.length() > 0)  // omit "." (cwd)
+      System.out.println(String.format(FILE_INFO, type, info));
   }
 
   private void selectDirectory() {

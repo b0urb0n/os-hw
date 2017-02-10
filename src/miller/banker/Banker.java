@@ -1,4 +1,4 @@
-package lib.banker;
+package miller.banker;
 
 import java.util.ArrayList;
 
@@ -18,8 +18,8 @@ public class Banker {
   
   public static void main(String[] args){    
     if (args.length == 2){
-      Integer numOfProc = Integer.parseInt(args[0]);
-      Integer numOfRes = Integer.parseInt(args[1]);
+      Integer numOfProc = new Integer(args[0]);
+      Integer numOfRes = new Integer(args[1]);
 
       bankersProblem = new BankersProblem(numOfProc, numOfRes);
       System.out.println(bankersProblem.toString());

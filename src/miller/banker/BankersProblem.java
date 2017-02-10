@@ -1,4 +1,4 @@
-package lib.banker;
+package miller.banker;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -1,4 +1,4 @@
-import lib.banker.Banker;
+import miller.banker.Banker;
 
 public class Homework3 {
   public static void main(String[] args) {

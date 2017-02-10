@@ -1,4 +1,4 @@
-import lib.thread.ThreadSync;
+import miller.thread.ThreadSync;
 
 public class Homework4 {
   public static void main(String[] args) {
