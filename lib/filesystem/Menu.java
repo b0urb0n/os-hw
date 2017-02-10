@@ -1,10 +1,22 @@
 package lib.filesystem;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 public class Menu {
-  private static final String INVALID_SELECTION = "\nInvalid selection...";
-  private static final String HEADER = "\n-- Miller - Filesystem Menu --";
+  private static final String FILE_INFO = "%s - %s";
+  private static final String INPUT_DIR = "\nInput directory: ";
+  private static final String INPUT_FILE = "\nInput file: ";
+  private static final String INPUT_PASSWORD = "\nInput password: ";
+  private static final String ERROR_NOT_FOUND = "\nError: %s not found.";
+  private static final String ERROR_COMMAND = "\nInvalid selection...";
+  private static final String ERROR_INFO = "\nError: %s";
+  private static final String HEADER = "\n-- Filesystem Menu --";
   private static final String MENU = "0 – Exit\n"
                                    + "1 – Select directory\n"
                                    + "2 – List directory content (first level)\n"
@@ -16,7 +28,7 @@ public class Menu {
                                    + "Select action: ";
   
   private Scanner input = new Scanner(System.in);
-  private File cwd;
+  private Path cwd;
 
   public void display() {
     System.out.println(HEADER);
@@ -28,7 +40,7 @@ public class Menu {
     parse(cmd);
   }
   
-  public void parse(int command) {
+  private void parse(int command) {
     switch(command){
     case 0:
       System.exit(0);
@@ -37,10 +49,10 @@ public class Menu {
       selectDirectory();
       break;
     case 2:
-      listDirectory(false);
+      listDirectory(cwd, false);
       break;
     case 3:
-      listDirectory(true);
+      listDirectory(cwd, true);
       break;
     case 4:
       deleteFile();
@@ -55,45 +67,91 @@ public class Menu {
       decryptFile();
       break;
     default:
-      System.out.println(INVALID_SELECTION);
+      System.out.println(ERROR_COMMAND);
       break;
     }
   }
+  
+  private Path getPathFromInput() {
+    System.out.print(INPUT_FILE);
+    Path p = Paths.get(input.nextLine());
+    
+    while (! Files.isDirectory(p, LinkOption.NOFOLLOW_LINKS)){
+      System.out.println(String.format(ERROR_NOT_FOUND, p));
+      p = Paths.get(input.nextLine());
+    }
+    
+    return p;
+  }
+  
+  private String getPasswordFromInput() {
+    System.out.print(INPUT_PASSWORD);
+    return new String();
+  }
 
   private void decryptFile() {
-    // TODO Auto-generated method stub
-    
+    Path f = getPathFromInput();
+    String password = getPasswordFromInput();
   }
 
   private void encryptFile() {
-    // TODO Auto-generated method stub
-    
+    Path f = getPathFromInput();
+    String password = getPasswordFromInput();
   }
 
   private void displayFile() {
-    // TODO Auto-generated method stub
+    Path f = getPathFromInput();
     
   }
 
   private void deleteFile() {
-    // TODO Auto-generated method stub
+    Path f = getPathFromInput();
     
-  }
-
-  private void listDirectory(boolean recurse) {
-    for (String child : cwd.list()) {
-      File f = new File(child);
-      System.out.println();
+    try{
+      Files.delete(f);
+    } catch (IOException e) {
+      System.out.println(String.format(ERROR_INFO, e.toString()));
     }
   }
 
+  private void listDirectory(Path path, boolean recurse) {
+    Stream<Path> children;
+    try {
+      children = Files.list(path);
+      children.forEach(this::printFileInfo);
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+    }
+    // TODO fix this function
+  }
+  
+  private void printFileInfo(Path path) {
+    String type = "?";
+    String info = path.toString();
+    
+    if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)) {
+      type = "D";
+    } else if (Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS)){
+      type = "F";
+    } else if (Files.isSymbolicLink(path)) {
+      type = "L";
+      try {
+        info = info + " -> " + Files.readSymbolicLink(path).toString();
+      } catch (IOException e) {
+        info = info + " -> Error reading link";
+      }
+    }
+    
+    System.out.println(String.format(FILE_INFO, type, info));
+  }
+
   private void selectDirectory() {
-    System.out.print(SELECT_DIR);
-    File d = new File(input.nextLine());
-    if (d.isDirectory()) {
+    System.out.print(INPUT_DIR);
+    Path d = Paths.get(input.nextLine());
+    if (Files.isDirectory(d, LinkOption.NOFOLLOW_LINKS)) {
       this.cwd = d;
     } else {
-      // TODO error that d isn't a dir
+      System.out.println(String.format(ERROR_NOT_FOUND, d));
     }
   }
 }
