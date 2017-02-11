@@ -13,12 +13,12 @@ public class MenuConstants {
   public static final String FILE_INFO = "%s - %s";
   
   public static final String HEX_BYTE = "%02X";
-  public static final String HEX_OFFSET = "0x%06X: ";
+  public static final String HEX_OFFSET = "\n0x%08X: ";
   
-  public static final String INPUT_DIR = "\nInput directory: ";
-  public static final String INPUT_FILE = "\nInput file: ";
-  public static final String INPUT_OUTPUT_FILE = "\nOutput file: ";
-  public static final String INPUT_PASSWORD = "\nInput password: ";
+  public static final String INPUT_DIR = "Input directory: ";
+  public static final String INPUT_FILE = "Input file: ";
+  public static final String INPUT_OUTPUT_FILE = "Output file: ";
+  public static final String INPUT_PASSWORD = "Input password: ";
 
   public static final String HEADER = "\n-- Filesystem Menu --";
   public static final String MENU = "0 - Exit\n"

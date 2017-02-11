@@ -15,14 +15,13 @@ public class Menu {
   public void display() {
     System.out.println(MenuConstants.HEADER);
     System.out.print(MenuConstants.MENU);
-
-    try{
+    
+    try {
       int cmd = Integer.parseInt(input.nextLine());
       parse(cmd);
     } catch (NumberFormatException e) {
       System.out.println(MenuConstants.ERROR_COMMAND);
-      return;
-    } 
+    }
   }
   
   private void parse(int command) {
@@ -105,7 +104,7 @@ public class Menu {
   }
 
   private void cryptFile() {
-    Path fin = getPathFromInput();
+    Path fin = getPathFromInput(false);
     String password = getPasswordFromInput();
     Path fout = getPathFromInput(false, MenuConstants.INPUT_OUTPUT_FILE);
 
@@ -117,6 +116,7 @@ public class Menu {
       finBytes = Files.readAllBytes(fin);
     } catch (IOException e) {
       System.out.println(String.format(MenuConstants.ERROR_CANT_OPEN, fin.toString()));
+      return;
     }
     
     foutBytes = new byte[finBytes.length];
@@ -128,22 +128,24 @@ public class Menu {
       Files.write(fout, foutBytes);
     } catch (IOException e) {
       System.out.println(String.format(MenuConstants.ERROR_CANT_OPEN, fout.toString()));
+      return;
     }
   }
 
   private void displayFile() {
     int offset = 0;
     StringBuilder sb = new StringBuilder();
-    Path f = getPathFromInput();
-    sb.append(String.format(MenuConstants.HEX_OFFSET, offset));
+    Path f = getPathFromInput(false);
     
     try {
       byte[] bytes = Files.readAllBytes(f);
+      sb.append(String.format(MenuConstants.HEX_OFFSET, offset));
+
       for (byte b : bytes){
         sb.append(String.format(MenuConstants.HEX_BYTE, b));
         offset++;
         
-        if (offset % MenuConstants.BYTE_COLS == 0) {
+        if (offset % MenuConstants.BYTE_COLS == 0 && offset < bytes.length) {
           sb.append(String.format(MenuConstants.HEX_OFFSET, offset));
         } else {
           sb.append(" ");
@@ -157,12 +159,12 @@ public class Menu {
   }
 
   private void deleteFile() {
-    Path f = getPathFromInput();
+    Path f = getPathFromInput(false);
     
     try{
       Files.delete(f);
     } catch (IOException e) {
-      System.out.println(String.format(MenuConstants.ERROR_INFO, e.toString()));
+      System.out.println(String.format(MenuConstants.ERROR_NOT_FOUND, f.toString()));
     }
   }
 
@@ -175,7 +177,7 @@ public class Menu {
         children = Files.walk(path, 1);
       }
     } catch (IOException e) {
-      System.out.println(String.format(MenuConstants.ERROR_INFO, e.toString()));
+      System.out.println(String.format(MenuConstants.ERROR_INFO, e.getMessage()));
     } finally {
       children.forEach(this::printFileInfo);
     }
@@ -204,7 +206,7 @@ public class Menu {
 
   private void selectDirectory() {
     System.out.print(MenuConstants.INPUT_DIR);
-    Path d = Paths.get(input.next());
+    Path d = Paths.get(input.nextLine());
     
     if (! d.isAbsolute() && cwd != null){
       d = Paths.get(cwd.toString(), d.toString());
