@@ -8,47 +8,26 @@ import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
-public class Menu {
-  private static final int BYTE_COLS = 16;
-  private static final String FILE_INFO = "%s - %s";
-  private static final String INPUT_DIR = "\nInput directory: ";
-  private static final String INPUT_FILE = "\nInput file: ";
-  private static final String INPUT_PASSWORD = "\nInput password: ";
-  private static final String ERROR_NO_CWD = "\nError: you must select a directory before continuing";
-  private static final String ERROR_CANT_OPEN = "\nError: cannot open %s for reading";
-  private static final String ERROR_NOT_FOUND = "\nError: %s not found.";
-  private static final String ERROR_COMMAND = "\nInvalid selection...";
-  private static final String ERROR_INFO = "\nError: %s";
-  private static final String HEADER = "\n-- Filesystem Menu --";
-  private static final String MENU = "0 - Exit\n"
-                                   + "1 - Select directory\n"
-                                   + "2 - List directory content (first level)\n"
-                                   + "3 - List directory content (all levels)\n"
-                                   + "4 - Delete file\n"
-                                   + "5 - Display file (hexadecimal view)\n"
-                                   + "6 - Encrypt file (XOR with password)\n"
-                                   + "7 - Decrypt file (XOR with password)\n"
-                                   + "Select action: ";
-  
+public class Menu {  
   private Scanner input = new Scanner(System.in);
   private Path cwd = null;
 
   public void display() {
-    System.out.println(HEADER);
-    System.out.print(MENU);
+    System.out.println(MenuConstants.HEADER);
+    System.out.print(MenuConstants.MENU);
 
     try{
       int cmd = Integer.parseInt(input.nextLine());
       parse(cmd);
     } catch (NumberFormatException e) {
-      System.out.println(ERROR_COMMAND);
+      System.out.println(MenuConstants.ERROR_COMMAND);
       return;
     } 
   }
   
   private void parse(int command) {
     if (cwd == null && command != 1 && command != 0) {
-      System.out.println(ERROR_NO_CWD);
+      System.out.println(MenuConstants.ERROR_NO_CWD);
       return;
     }
     switch(command){
@@ -71,77 +50,107 @@ public class Menu {
       displayFile();
       break;
     case 6:
-      encryptFile();
+      cryptFile();
       break;
     case 7:
-      decryptFile();
+      cryptFile();
       break;
     default:
-      System.out.println(ERROR_COMMAND);
+      System.out.println(MenuConstants.ERROR_COMMAND);
       break;
     }
   }
   
   private Path getPathFromInput() {
+    return getPathFromInput(true);
+  }
+  
+  private Path getPathFromInput(boolean mustExist) {
+    return getPathFromInput(mustExist, MenuConstants.INPUT_FILE);
+  }
+  
+  private Path getPathFromInput(boolean mustExist, String formatString) {
     Path p = null;
-    String in;
         
     while (true){
-      System.out.print(INPUT_FILE);
-      in = input.nextLine();
-      if (in.startsWith("/")) {
-        p = Paths.get(in);
-      } else {
-        p = Paths.get(cwd.toString(), in);
+      System.out.print(formatString);
+      p = Paths.get(input.nextLine());
+
+      if (! p.isAbsolute()) {
+        p = Paths.get(cwd.toString(), p.toString());
       }
       
-      if (Files.isRegularFile(p)) {
+      if (mustExist && Files.isRegularFile(p)) {
+        return p;
+      } else if (! mustExist) {
         return p;
       }
       
-      System.out.println(String.format(ERROR_NOT_FOUND, p.toString()));
+      System.out.println(String.format(MenuConstants.ERROR_NOT_FOUND, p.toString()));
     }
   }
   
   private String getPasswordFromInput() {
-    System.out.print(INPUT_PASSWORD);
-    return input.nextLine();
+    String in = null;
+    while (true){
+      System.out.print(MenuConstants.INPUT_PASSWORD);
+      in = input.nextLine();
+      
+      if (in != null){
+        return in;
+      } else {
+        System.out.println(MenuConstants.ERROR_EMPTY_PASS);
+      }
+    }
   }
 
-  private void decryptFile() {
-    Path f = getPathFromInput();
+  private void cryptFile() {
+    Path fin = getPathFromInput();
     String password = getPasswordFromInput();
-    
-    //TODO xor file with password
-  }
+    Path fout = getPathFromInput(false, MenuConstants.INPUT_OUTPUT_FILE);
 
-  private void encryptFile() {
-    Path f = getPathFromInput();
-    String password = getPasswordFromInput();
+    byte[] finBytes = null;
+    byte[] foutBytes = null;
+    byte[] passBytes = password.getBytes();
     
-    //TODO xor file with password
+    try {
+      finBytes = Files.readAllBytes(fin);
+    } catch (IOException e) {
+      System.out.println(String.format(MenuConstants.ERROR_CANT_OPEN, fin.toString()));
+    }
+    
+    foutBytes = new byte[finBytes.length];
+    for (int i=0; i<finBytes.length; i++) {
+      foutBytes[i] = (byte) (finBytes[i] ^ passBytes[i % passBytes.length]);
+    }
+    
+    try {
+      Files.write(fout, foutBytes);
+    } catch (IOException e) {
+      System.out.println(String.format(MenuConstants.ERROR_CANT_OPEN, fout.toString()));
+    }
   }
 
   private void displayFile() {
-    int count = 0;
+    int offset = 0;
     StringBuilder sb = new StringBuilder();
     Path f = getPathFromInput();
+    sb.append(String.format(MenuConstants.HEX_OFFSET, offset));
     
     try {
       byte[] bytes = Files.readAllBytes(f);
       for (byte b : bytes){
-        sb.append(String.format("%02X", b));
-        count++;
+        sb.append(String.format(MenuConstants.HEX_BYTE, b));
+        offset++;
         
-        if (count >= BYTE_COLS) {
-          count = 0;
-          sb.append("\n");
+        if (offset % MenuConstants.BYTE_COLS == 0) {
+          sb.append(String.format(MenuConstants.HEX_OFFSET, offset));
         } else {
           sb.append(" ");
         }
       }
     } catch (IOException e) {
-      System.out.println(String.format(ERROR_CANT_OPEN, f.toString()));
+      System.out.println(String.format(MenuConstants.ERROR_CANT_OPEN, f.toString()));
     } finally {
       System.out.println(sb.toString());
     }
@@ -153,7 +162,7 @@ public class Menu {
     try{
       Files.delete(f);
     } catch (IOException e) {
-      System.out.println(String.format(ERROR_INFO, e.toString()));
+      System.out.println(String.format(MenuConstants.ERROR_INFO, e.toString()));
     }
   }
 
@@ -166,7 +175,7 @@ public class Menu {
         children = Files.walk(path, 1);
       }
     } catch (IOException e) {
-      System.out.println(String.format(ERROR_INFO, e.toString()));
+      System.out.println(String.format(MenuConstants.ERROR_INFO, e.toString()));
     } finally {
       children.forEach(this::printFileInfo);
     }
@@ -190,16 +199,21 @@ public class Menu {
     }
     
     if (info.length() > 0)  // omit "." (cwd)
-      System.out.println(String.format(FILE_INFO, type, info));
+      System.out.println(String.format(MenuConstants.FILE_INFO, type, info));
   }
 
   private void selectDirectory() {
-    System.out.print(INPUT_DIR);
-    Path d = Paths.get(input.nextLine());
-    if (Files.isDirectory(d, LinkOption.NOFOLLOW_LINKS)) {
+    System.out.print(MenuConstants.INPUT_DIR);
+    Path d = Paths.get(input.next());
+    
+    if (! d.isAbsolute() && cwd != null){
+      d = Paths.get(cwd.toString(), d.toString());
+    } 
+    
+    if (Files.isDirectory(d)) {
       this.cwd = d;
     } else {
-      System.out.println(String.format(ERROR_NOT_FOUND, d));
+      System.out.println(String.format(MenuConstants.ERROR_NOT_FOUND, d));
     }
   }
 }
