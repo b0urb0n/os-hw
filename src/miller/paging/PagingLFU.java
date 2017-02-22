@@ -5,8 +5,7 @@ import java.util.ArrayList;
 public class PagingLFU extends PagingAlgorithm implements PagingAlgorithmInterface {
   
   public PagingLFU (ArrayList<Integer> refString) {
-    super();
-    setRefString(refString);
+    super(refString);
   }
 
   @Override

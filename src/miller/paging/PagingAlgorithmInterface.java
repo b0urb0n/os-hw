@@ -1,5 +1,5 @@
 package miller.paging;
 
 public interface PagingAlgorithmInterface {
-  public void simulate(int numOfFrames);
+  public void simulate (int numOfFrames);
 }

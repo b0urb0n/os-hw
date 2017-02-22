@@ -5,8 +5,7 @@ import java.util.ArrayList;
 public class PagingOPT extends PagingAlgorithm implements PagingAlgorithmInterface {
 
   public PagingOPT (ArrayList<Integer> refString) {
-    super();
-    setRefString(refString);
+    super(refString);
   }
 
   @Override

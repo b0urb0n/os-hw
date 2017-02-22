@@ -5,12 +5,17 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Menu {
-  private static final int FRAME_LIMIT = 8;
   private static final int PAGE_LIMIT = 10;
   private static final Random RAND = new Random();
   
+  private Integer frameLimit = null;
+  
   private Scanner input = new Scanner(System.in);
   private ArrayList<Integer> refString = null;
+  
+  public Menu (Integer frameLimit) {
+    this.frameLimit = frameLimit;
+  }
   
   public void display() {
     System.out.println(MenuConstants.HEADER);
@@ -61,22 +66,23 @@ public class Menu {
 
   private void simulateLFU() {
     PagingLFU lfu = new PagingLFU(refString);
-    lfu.simulate(FRAME_LIMIT);
+    lfu.simulate(frameLimit);
   }
 
   private void simulateLRU() {
     PagingLRU lru = new PagingLRU(refString);
-    lru.simulate(FRAME_LIMIT);
+    lru.simulate(frameLimit);
   }
 
   private void simulateOPT() {
     PagingOPT opt = new PagingOPT(refString);
-    opt.simulate(FRAME_LIMIT);
+    opt.simulate(frameLimit);
   }
 
   private void simulateFIFO() {
     PagingFIFO fifo = new PagingFIFO(refString);
-    fifo.simulate(FRAME_LIMIT);
+    fifo.simulate(frameLimit);
+    System.out.println(fifo.toString());
   }
 
   private void generateReferenceString() {
