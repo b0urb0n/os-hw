@@ -23,8 +23,8 @@ public class PagingAlgorithm {
   protected ArrayList<Integer> refString;
   protected ArrayList<ArrayList<Integer>> table;
   
-  protected ArrayList<Integer> pageFault = new ArrayList<Integer>();
-  protected ArrayList<Integer> victimFrame = new ArrayList<Integer>();
+  protected ArrayList<Integer> pageFaultList = new ArrayList<Integer>();
+  protected ArrayList<Integer> victimFrameList = new ArrayList<Integer>();
   
   public PagingAlgorithm () {}
   
@@ -46,6 +46,24 @@ public class PagingAlgorithm {
   
   public ArrayList<ArrayList<Integer>> getTable () {
     return table;
+  }
+  
+  public boolean framesAreFull (ArrayList<Integer> frames) {
+    for (int i=0; i<frames.size(); i++) {
+      if (frames.get(i) == -1) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
+  public Integer getFirstEmptyFrame (ArrayList<Integer> frames) {
+    for (int i=0; i<frames.size(); i++) {
+      if (frames.get(i) == -1) {
+        return i;
+      }
+    }
+    return -1;
   }
   
   public String toString () {
@@ -77,7 +95,7 @@ public class PagingAlgorithm {
     }
     
     sb.append(String.format(NAME_FORMAT, PAGE_FAULT));
-    for (Integer i: pageFault) {
+    for (Integer i: pageFaultList) {
       if (i == -1) {
         sb.append("   ");
       } else {
@@ -87,7 +105,7 @@ public class PagingAlgorithm {
     sb.append("\n");
     
     sb.append(String.format(NAME_FORMAT, VICTIM_FRAME));
-    for (Integer i: victimFrame) {
+    for (Integer i: victimFrameList) {
       if (i == -1) {
         sb.append("   ");
       } else {

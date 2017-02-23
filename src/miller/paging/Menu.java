@@ -67,16 +67,19 @@ public class Menu {
   private void simulateLFU() {
     PagingLFU lfu = new PagingLFU(refString);
     lfu.simulate(frameLimit);
+    System.out.println(lfu.toString());
   }
 
   private void simulateLRU() {
     PagingLRU lru = new PagingLRU(refString);
     lru.simulate(frameLimit);
+    System.out.println(lru.toString());
   }
 
   private void simulateOPT() {
     PagingOPT opt = new PagingOPT(refString);
     opt.simulate(frameLimit);
+    System.out.println(opt.toString());
   }
 
   private void simulateFIFO() {
