@@ -5,11 +5,10 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Menu {
-  private static final int PAGE_LIMIT = 10;
+  private static final int RANDOM_FRAME_MAX = 10;
   private static final Random RAND = new Random();
   
   private Integer frameLimit = null;
-  
   private Scanner input = new Scanner(System.in);
   private ArrayList<Integer> refString = null;
   
@@ -34,15 +33,16 @@ public class Menu {
       System.out.println(MenuConstants.ERROR_NO_REF_STRING);
       return;
     }
+    
     switch(command){
     case 0:
       System.exit(0);
       break;
     case 1:
-      readReferenceString();
+      readReferenceStringFromUser();
       break;
     case 2:
-      generateReferenceString();
+      generateRandomReferenceString();
       break;
     case 3:
       System.out.println(refString.toString());
@@ -88,7 +88,7 @@ public class Menu {
     System.out.println(fifo.toString());
   }
 
-  private void generateReferenceString() {
+  private void generateRandomReferenceString() {
     String in = "";
     
     while (true) {
@@ -111,12 +111,12 @@ public class Menu {
   private ArrayList<Integer> getRandomReferenceString(Integer count) {
     ArrayList<Integer> templ = new ArrayList<Integer>();
     for (int i=0; i<count; i++) {
-      templ.add(RAND.nextInt(PAGE_LIMIT));
+      templ.add(RAND.nextInt(RANDOM_FRAME_MAX));
     }
     return templ;
   }
 
-  private void readReferenceString() {
+  private void readReferenceStringFromUser() {
     String in = "";
     
     while (true) {
