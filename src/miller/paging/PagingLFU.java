@@ -70,7 +70,7 @@ public class PagingLFU extends PagingAlgorithm implements PagingAlgorithmInterfa
   }
 
   private Integer getVictimFrame(ArrayList<Integer> currentFrames, HashMap<Integer, Integer> frameUsage) {
-    Integer victim = 0;
+    Integer victim = null;
     Integer lowest = Integer.MAX_VALUE;
     for (Integer frame: currentFrames) {
       if (frameUsage.get(frame) < lowest) {
