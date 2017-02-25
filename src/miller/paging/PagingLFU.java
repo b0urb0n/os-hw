@@ -16,9 +16,9 @@ public class PagingLFU extends PagingAlgorithm implements PagingAlgorithmInterfa
     
     setup(numOfFrames);
     
-    HashMap<Integer, Integer> pageUsage = new HashMap<Integer, Integer>();
+    HashMap<Integer, Integer> frameUsage = new HashMap<Integer, Integer>();
     for (Integer i: refString) {
-      pageUsage.put(i, 0);
+      frameUsage.put(i, 0);
     }
     
     for (int i=0; i<refString.size(); i++) {
@@ -27,54 +27,54 @@ public class PagingLFU extends PagingAlgorithm implements PagingAlgorithmInterfa
       }
       
       ArrayList<Integer> currentFrames = table.get(i);
-      Integer page = refString.get(i);
+      Integer newFrame = refString.get(i);
       
-      System.out.println(String.format(REFERENCED_MSG, page));
+      System.out.println(String.format(REFERENCED_MSG, newFrame));
       
       // increment page usage by 1
-      pageUsage.put(page, pageUsage.get(page) + 1);
+      frameUsage.put(newFrame, frameUsage.get(newFrame) + 1);
       
-      if (currentFrames.contains(page)) {
+      if (currentFrames.contains(newFrame)) {
         // already loaded
-        System.out.println(String.format(PAGE_HIT_MSG, page));
+        System.out.println(String.format(PAGE_HIT_MSG, newFrame));
         pageFaultList.add(-1);
         victimFrameList.add(-1);
       } else {
         // page fault
-        System.out.println(String.format(PAGE_MISS_MSG, page));
+        System.out.println(String.format(PAGE_MISS_MSG, newFrame));
         System.out.println(PAGE_FAULT_MSG);
                         
         // determine if we need to swap a frame
         if (framesAreFull(currentFrames)) {
           // swap frame
           // get victim frame
-          victimFrame = getVictimFrame(currentFrames, pageUsage);
+          victimFrame = getVictimFrame(currentFrames, frameUsage);
           victimIndex = currentFrames.indexOf(victimFrame);
           
-          System.out.println(String.format(SWAP_MSG, page, currentFrames.get(victimIndex)));
+          System.out.println(String.format(SWAP_MSG, newFrame, currentFrames.get(victimIndex)));
           System.out.println(String.format(VICTIM_FRAME_MSG, victimFrame));          
           pageFaultList.add(1);
           victimFrameList.add(victimFrame);
           currentFrames.remove(victimFrame);
-          currentFrames.add(victimIndex, page);
+          currentFrames.add(victimIndex, newFrame);
         } else {
           // load frame directly
-          System.out.println(String.format(LOAD_MSG, page, 0));
+          System.out.println(String.format(LOAD_MSG, newFrame, 0));
           pageFaultList.add(1);
           victimFrameList.add(-1); 
-          currentFrames.add(getFirstEmptyFrame(currentFrames), page);
+          currentFrames.add(getFirstEmptyFrame(currentFrames), newFrame);
           currentFrames.remove(currentFrames.size() - 1);
         }
       }
     }
   }
 
-  private Integer getVictimFrame(ArrayList<Integer> currentFrames, HashMap<Integer, Integer> pageUsage) {
+  private Integer getVictimFrame(ArrayList<Integer> currentFrames, HashMap<Integer, Integer> frameUsage) {
     Integer victim = 0;
     Integer lowest = Integer.MAX_VALUE;
     for (Integer frame: currentFrames) {
-      if (pageUsage.get(frame) < lowest) {
-        lowest = pageUsage.get(frame);
+      if (frameUsage.get(frame) < lowest) {
+        lowest = frameUsage.get(frame);
         victim = frame;
       }
     }
