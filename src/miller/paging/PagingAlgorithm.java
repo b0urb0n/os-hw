@@ -24,7 +24,7 @@ public class PagingAlgorithm {
   protected static final String VICTIM_FRAME_MSG = " * Victim frame is frame %d";
   
   protected ArrayList<Integer> refString;
-  protected ArrayList<ArrayList<Integer>> table;
+  protected ArrayList<ArrayList<Integer>> frameTable;
   
   protected ArrayList<Integer> pageFaultList = new ArrayList<Integer>();
   protected ArrayList<Integer> victimFrameList = new ArrayList<Integer>();
@@ -35,20 +35,20 @@ public class PagingAlgorithm {
     this.refString = refString;
   }
   
-  protected void setup (int numOfFrames) {
-    table = new ArrayList<ArrayList<Integer>>();
-    table.add(new ArrayList<Integer>(Collections.nCopies(numOfFrames, -1)));
+  protected void setupFrameTable (int numOfFrames) {
+    frameTable = new ArrayList<ArrayList<Integer>>();
+    frameTable.add(new ArrayList<Integer>(Collections.nCopies(numOfFrames, -1)));
   }
   
-  public ArrayList<Integer> getRefString() {
+  public ArrayList<Integer> getRefString () {
     return refString;
   }
   public void setRefString (ArrayList<Integer> ref) {
     refString = ref;
   }
   
-  public ArrayList<ArrayList<Integer>> getTable () {
-    return table;
+  public ArrayList<ArrayList<Integer>> getFrameTable () {
+    return frameTable;
   }
   
   public boolean framesAreFull (ArrayList<Integer> frames) {
@@ -77,12 +77,13 @@ public class PagingAlgorithm {
     sb.append(getPageFaults());
     sb.append(getVictimFrames());
     sb.append("\n");
+    sb.append(getTotalPageFaults());
     sb.append("\n");
-    sb.append(String.format(TOTAL_PAGE_FAULTS, getTotalPageFaults()));
     return sb.toString();
   }
-
-  private String getReferenceString() {
+  
+  // all below functions are for the final paging table
+  private String getReferenceString () {
     StringBuilder sb = new StringBuilder();
     sb.append(String.format(NAME_FORMAT, REFERENCE));
     for (Integer i: refString) {
@@ -93,15 +94,15 @@ public class PagingAlgorithm {
       }
     }
     sb.append("\n");
-    return sb.toString();
+    return sb.toString ();
   }
 
   private String getFrameRows() {
     StringBuilder sb = new StringBuilder();
-    for (int i=0; i<table.get(0).size(); i++) {
+    for (int i=0; i<frameTable.get(0).size(); i++) {
       sb.append(String.format(NAME_FORMAT, String.format(FRAME_FORMAT, i)));
       
-      for (ArrayList<Integer> currentFrames: table) {
+      for (ArrayList<Integer> currentFrames: frameTable) {
         if (currentFrames.get(i) == -1) {
           sb.append(SPACES);
         } else {
@@ -114,7 +115,7 @@ public class PagingAlgorithm {
     return sb.toString();
   }
 
-  private String getPageFaults() {
+  private String getPageFaults () {
     StringBuilder sb = new StringBuilder();
     sb.append(String.format(NAME_FORMAT, PAGE_FAULT));
     for (Integer i: pageFaultList) {
@@ -128,7 +129,7 @@ public class PagingAlgorithm {
     return sb.toString();
   }
 
-  private String getVictimFrames() {
+  private String getVictimFrames () {
     StringBuilder sb = new StringBuilder();
     sb.append(String.format(NAME_FORMAT, VICTIM_FRAME));
     for (Integer i: victimFrameList) {
@@ -141,12 +142,12 @@ public class PagingAlgorithm {
     return sb.toString();
   }
 
-  private Integer getTotalPageFaults() {
+  private String getTotalPageFaults () {
     Integer count = 0;
     for (Integer pf: pageFaultList) {
       if (pf == 1)
         count++;
     }
-    return count;
+    return String.format(TOTAL_PAGE_FAULTS, count);
   }
 }

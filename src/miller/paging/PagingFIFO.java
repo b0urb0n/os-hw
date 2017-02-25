@@ -2,35 +2,38 @@ package miller.paging;
 
 import java.util.ArrayList;
 
-public class PagingFIFO extends PagingAlgorithm implements PagingAlgorithmInterface {  
+public class PagingFIFO extends PagingAlgorithm implements PagingAlgorithmInterface {
+  
   public PagingFIFO (ArrayList<Integer> refString) {
     super(refString);
   }
   
   @Override
   public void simulate (int numOfFrames) {
-    setup(numOfFrames);
+    ArrayList<Integer> currentFrames;
+    Integer newFrame;
+    
+    setupFrameTable(numOfFrames);
     
     for (int i=0; i<refString.size(); i++) {
       if (i != 0){ // copy previous column to current
-        table.add(new ArrayList<Integer>(table.get(i - 1)));
+        frameTable.add(new ArrayList<Integer>(frameTable.get(i - 1)));
       }
       
-      ArrayList<Integer> currentFrames = table.get(i);
-      Integer newFrame = refString.get(i);
+      currentFrames = frameTable.get(i);
+      newFrame = refString.get(i);
       
       System.out.println(String.format(REFERENCED_MSG, newFrame));
       
-      if (currentFrames.contains(newFrame)) {
+      if (currentFrames.contains(newFrame)) { // hit
         System.out.println(String.format(PAGE_HIT_MSG, newFrame));
         pageFaultList.add(-1);
         victimFrameList.add(-1);
-      } else {
+      } else { // page fault
         System.out.println(String.format(PAGE_MISS_MSG, newFrame));
         System.out.println(PAGE_FAULT_MSG);
-        // determine if we need to swap a frame
         
-        if (framesAreFull(currentFrames)) {
+        if (framesAreFull(currentFrames)) { // swap or load
           System.out.println(String.format(SWAP_MSG, newFrame, currentFrames.get(currentFrames.size() - 1)));
           System.out.println(String.format(VICTIM_FRAME_MSG, currentFrames.get(currentFrames.size() - 1)));          
           pageFaultList.add(1);

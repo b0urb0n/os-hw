@@ -10,10 +10,12 @@ public class PagingOPT extends PagingAlgorithm implements PagingAlgorithmInterfa
 
   @Override
   public void simulate(int numOfFrames) {
+    ArrayList<Integer> currentFrames;
+    Integer newFrame;
     Integer victimFrame;
     Integer victimIndex;
     
-    setup(numOfFrames);
+    setupFrameTable(numOfFrames);
     
     ArrayList<Integer> remainingFrames = new ArrayList<Integer>();
     for (Integer i: refString) {
@@ -22,28 +24,23 @@ public class PagingOPT extends PagingAlgorithm implements PagingAlgorithmInterfa
     
     for (int i=0; i<refString.size(); i++) {
       if (i != 0){ // copy previous column to current
-        table.add(new ArrayList<Integer>(table.get(i - 1)));
+        frameTable.add(new ArrayList<Integer>(frameTable.get(i - 1)));
       }
       
-      ArrayList<Integer> currentFrames = table.get(i);
-      Integer newFrame = refString.get(i);
+      currentFrames = frameTable.get(i);
+      newFrame = refString.get(i);
       
       System.out.println(String.format(REFERENCED_MSG, newFrame));
       
-      if (currentFrames.contains(newFrame)) {
-        // already loaded
+      if (currentFrames.contains(newFrame)) { // hit
         System.out.println(String.format(PAGE_HIT_MSG, newFrame));
         pageFaultList.add(-1);
         victimFrameList.add(-1);
-      } else {
-        // page fault
+      } else {  // page fault
         System.out.println(String.format(PAGE_MISS_MSG, newFrame));
         System.out.println(PAGE_FAULT_MSG);
                         
-        // determine if we need to swap a frame
-        if (framesAreFull(currentFrames)) {
-          // swap frame
-          // get victim frame
+        if (framesAreFull(currentFrames)) { // swap or load
           victimFrame = getVictimFrame(remainingFrames, currentFrames);
           victimIndex = currentFrames.indexOf(victimFrame);
           
@@ -54,7 +51,6 @@ public class PagingOPT extends PagingAlgorithm implements PagingAlgorithmInterfa
           currentFrames.remove(victimFrame);
           currentFrames.add(victimIndex, newFrame);
         } else {
-          // load frame directly
           System.out.println(String.format(LOAD_MSG, newFrame, 0));
           pageFaultList.add(1);
           victimFrameList.add(-1); 
@@ -67,6 +63,8 @@ public class PagingOPT extends PagingAlgorithm implements PagingAlgorithmInterfa
   }
 
   private Integer getVictimFrame(ArrayList<Integer> remainingFrames, ArrayList<Integer> currentFrames) {
+    // for OPT this should return the frame that won't be used for the most
+    // iterations or the first frame that won't be used again
     ArrayList<Integer> currentRemainingFrames = new ArrayList<Integer>();
     for (Integer frame: currentFrames) {
       currentRemainingFrames.add(frame);
