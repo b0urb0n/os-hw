@@ -8,6 +8,9 @@ public class PagingAlgorithm {
   protected static final String NAME_FORMAT = "%13s:";
   protected static final String PAGE_FAULT = "Page Fault";
   protected static final String REFERENCE = "Reference";
+  protected static final String SINGLE_DIGIT = "%2d ";
+  protected static final String SPACES = "   ";
+  protected static final String TOTAL_PAGE_FAULTS = "Total Page Faults: %d";
   protected static final String VICTIM_FRAME = "Victim Frame";
   
   protected static final String NO_PAGE_FAULT_MSG = " * No page fault.";
@@ -69,51 +72,81 @@ public class PagingAlgorithm {
   public String toString () {
     StringBuilder sb = new StringBuilder();
     sb.append("\n");
-    
+    sb.append(getReferenceString());
+    sb.append(getFrameRows());
+    sb.append(getPageFaults());
+    sb.append(getVictimFrames());
+    sb.append("\n");
+    sb.append("\n");
+    sb.append(String.format(TOTAL_PAGE_FAULTS, getTotalPageFaults()));
+    return sb.toString();
+  }
+
+  private String getReferenceString() {
+    StringBuilder sb = new StringBuilder();
     sb.append(String.format(NAME_FORMAT, REFERENCE));
     for (Integer i: refString) {
       if (i == -1) {
-        sb.append("   ");
+        sb.append(SPACES);
       } else {
-        sb.append(String.format("%2d ", i));
+        sb.append(String.format(SINGLE_DIGIT, i));
       }
     }
     sb.append("\n");
-    
+    return sb.toString();
+  }
+
+  private String getFrameRows() {
+    StringBuilder sb = new StringBuilder();
     for (int i=0; i<table.get(0).size(); i++) {
       sb.append(String.format(NAME_FORMAT, String.format(FRAME_FORMAT, i)));
       
       for (ArrayList<Integer> currentFrames: table) {
         if (currentFrames.get(i) == -1) {
-          sb.append("   ");
+          sb.append(SPACES);
         } else {
-          sb.append(String.format("%2d ", currentFrames.get(i)));
+          sb.append(String.format(SINGLE_DIGIT, currentFrames.get(i)));
         }
       }
       
       sb.append("\n");
     }
-    
+    return sb.toString();
+  }
+
+  private String getPageFaults() {
+    StringBuilder sb = new StringBuilder();
     sb.append(String.format(NAME_FORMAT, PAGE_FAULT));
     for (Integer i: pageFaultList) {
       if (i == -1) {
-        sb.append("   ");
+        sb.append(SPACES);
       } else {
-        sb.append(String.format("%2d ", i));
+        sb.append(String.format(SINGLE_DIGIT, i));
       }
     }
     sb.append("\n");
-    
+    return sb.toString();
+  }
+
+  private String getVictimFrames() {
+    StringBuilder sb = new StringBuilder();
     sb.append(String.format(NAME_FORMAT, VICTIM_FRAME));
     for (Integer i: victimFrameList) {
       if (i == -1) {
-        sb.append("   ");
+        sb.append(SPACES);
       } else {
-        sb.append(String.format("%2d ", i));
+        sb.append(String.format(SINGLE_DIGIT, i));
       }
     }
-    sb.append("\n");
-
     return sb.toString();
+  }
+
+  private Integer getTotalPageFaults() {
+    Integer count = 0;
+    for (Integer pf: pageFaultList) {
+      if (pf == 1)
+        count++;
+    }
+    return count;
   }
 }
