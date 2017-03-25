@@ -60,10 +60,6 @@ public class Menu {
     }
   }
   
-  private Path getPathFromInput() {
-    return getPathFromInput(true);
-  }
-  
   private Path getPathFromInput(boolean mustExist) {
     return getPathFromInput(mustExist, MenuConstants.INPUT_FILE);
   }
